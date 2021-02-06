@@ -1,3 +1,5 @@
+import firebase from 'firebase/app'
+
 var firebaseConfig = {
   apiKey: "AIzaSyCVBiB9XL9FJSapVOSB3FuqZWmNqsYFHBk",
   authDomain: "svelte-crud-e23c3.firebaseapp.com",
