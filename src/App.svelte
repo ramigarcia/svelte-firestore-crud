@@ -1,13 +1,53 @@
 <script>
+  import { db } from "./firebase";
+
+  let task = {
+    name: "",
+    desc: "",
+  };
+
+  let tasks = [];
+
+  db.collection("tasks").onSnapshot((querySnapshot) => {
+    let docs = [];
+    querySnapshot.forEach((doc) => {
+      // console.log(doc.data());
+      docs.push(doc.data());
+    });
+    tasks = [...docs];
+    console.log(tasks);
+  });
+
+  const addTask = async () => {
+    await db
+      .collection("tasks")
+      .doc()
+      .set({
+        ...task,
+        createAt: Date.now(),
+      });
+    console.log("Tarea creada");
+  };
+
   const handleSubmit = () => {
-    console.log("Guardado");
+    addTask();
+
+    task = { name: "", desc: "" };
   };
 </script>
 
 <section>
   <form on:submit|preventDefault={handleSubmit}>
-    <input type="text" placeholder="Escribe una tarea" />
-    <textarea rows="3" placeholder="Escribe una descripción" />
+    <input
+      bind:value={task.title}
+      type="text"
+      placeholder="Escribe una tarea"
+    />
+    <textarea
+      bind:value={task.desc}
+      rows="3"
+      placeholder="Escribe una descripción"
+    />
     <button>Guardar</button>
   </form>
 </section>
