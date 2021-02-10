@@ -1,5 +1,6 @@
 <script>
   import { db } from "./firebase";
+  import toastr from "toastr";
 
   let task = {
     name: "",
@@ -32,6 +33,12 @@
 
   const updateTask = () => {
     db.collection("tasks").doc(currentId).update(task);
+    editStatus = false;
+    toastr.success("Task update successfully", {
+      timeout: 1000,
+      progressBar: true,
+      positionClass: "toast-bottom-right",
+    });
   };
 
   const handleSubmit = () => {
@@ -63,27 +70,47 @@
 </script>
 
 <section>
-  <form on:submit|preventDefault={handleSubmit}>
-    <input bind:value={task.name} type="text" placeholder="Write a new task" />
-    <textarea
-      bind:value={task.desc}
-      rows="3"
-      placeholder="Write a task description"
-    />
-    <button>
+  <form on:submit|preventDefault={handleSubmit} class="card card-body">
+    <div class="form-group">
+      <input
+        bind:value={task.name}
+        type="text"
+        placeholder="Write a new task"
+        class="form-control"
+      />
+    </div>
+    <div class="form-group">
+      <textarea
+        bind:value={task.desc}
+        rows="3"
+        placeholder="Write a task description"
+        class="form-control"
+      />
+    </div>
+    <button class="btn btn-primary mt-2">
       {#if !editStatus}Save {:else} Update {/if}
     </button>
     {#if editStatus}
-      <button on:click={onCancel}>Cancel</button>
+      <button on:click={onCancel} class="btn btn-info mt-2">Cancel</button>
     {/if}
   </form>
   <!-- Para recorrer el tasks usamos each -->
   {#each tasks as task}
-    <div>
-      <h5>{task.name}</h5>
+    <div class="card card-body mt-2">
+      <div class="d-flex justify-content-between">
+        <h5>{task.name}</h5>
+        <i
+          class="material-icons"
+          on:click={editTask(task)}
+          style="vertical-align:middle;">edit</i
+        >
+      </div>
       <p>{task.desc}</p>
-      <button on:click={deleteTask(task.id)}>Delete</button>
-      <button on:click={editTask(task)}>Edit</button>
+      <button on:click={deleteTask(task.id)} class="btn btn-danger">
+        <i class="material-icons" style="vertical-align:middle;"
+          >delete_forever</i
+        >
+      </button>
     </div>
   {/each}
 </section>
