@@ -5,14 +5,15 @@
     name: "",
     desc: "",
   };
-
   let tasks = [];
+  let editStatus = false;
+  let currentId;
 
   db.collection("tasks").onSnapshot((querySnapshot) => {
     let docs = [];
     querySnapshot.forEach((doc) => {
       // console.log(doc.data());
-      docs.push(doc.data());
+      docs.push({ ...doc.data(), id: doc.id });
     });
     tasks = [...docs];
     console.log(tasks);
@@ -26,80 +27,66 @@
         ...task,
         createAt: Date.now(),
       });
-    console.log("Tarea creada");
+    console.log("New task created");
+  };
+
+  const updateTask = () => {
+    db.collection("tasks").doc(currentId).update(task);
   };
 
   const handleSubmit = () => {
-    addTask();
+    if (!editStatus) {
+      addTask();
+    } else {
+      updateTask();
+    }
 
+    task = { name: "", desc: "" };
+  };
+
+  const deleteTask = async (id) => {
+    // console.log(id);
+    await db.collection("tasks").doc(id).delete();
+  };
+  const editTask = (currentTask) => {
+    // console.log(task);
+    editStatus = true;
+    task.name = currentTask.name;
+    task.desc = currentTask.desc;
+    currentId = currentTask.id;
+  };
+
+  const onCancel = () => {
+    editStatus = false;
     task = { name: "", desc: "" };
   };
 </script>
 
 <section>
   <form on:submit|preventDefault={handleSubmit}>
-    <input
-      bind:value={task.title}
-      type="text"
-      placeholder="Escribe una tarea"
-    />
+    <input bind:value={task.name} type="text" placeholder="Write a new task" />
     <textarea
       bind:value={task.desc}
       rows="3"
-      placeholder="Escribe una descripción"
+      placeholder="Write a task description"
     />
-    <button>Guardar</button>
+    <button>
+      {#if !editStatus}Save {:else} Update {/if}
+    </button>
+    {#if editStatus}
+      <button on:click={onCancel}>Cancel</button>
+    {/if}
   </form>
+  <!-- Para recorrer el tasks usamos each -->
+  {#each tasks as task}
+    <div>
+      <h5>{task.name}</h5>
+      <p>{task.desc}</p>
+      <button on:click={deleteTask(task.id)}>Delete</button>
+      <button on:click={editTask(task)}>Edit</button>
+    </div>
+  {/each}
 </section>
 
 <style>
-  * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-  }
-  section {
-    max-width: 80%;
-    min-height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin: auto;
-  }
-
-  form {
-    display: flex;
-    flex-direction: column;
-    background: rgb(255, 255, 255);
-    min-height: 350px;
-    width: 90%;
-    border-radius: 20px;
-    justify-content: center;
-    align-items: center;
-    box-shadow: 0 0 30px rgba(255, 55, 255, 0.5);
-  }
-
-  input,
-  textarea {
-    max-width: 90%;
-    width: 100%;
-    height: 30px;
-    margin: 20px;
-    padding-left: 10px;
-  }
-
-  textarea {
-    height: 80px;
-    line-height: 18px;
-  }
-
-  button {
-    width: 150px;
-    border-radius: 20px;
-    border: none;
-    background: #09f;
-    color: white;
-    font-size: 20px;
-    height: 40px;
-  }
 </style>
